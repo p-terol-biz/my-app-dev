@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/ViewModel/cardSearchFormState.dart';
 import 'package:myapp/ViewModel/deckDetailState.dart';
+import '../View/cardSearchFormWidget.dart';
 import '../ViewModel/deckListState.dart';
 
 class DeckListViewRouter {
@@ -29,3 +31,14 @@ class DeckDetailViewRouter {
     );
   }
 }
+
+// class CardSearchFormRouter {
+//   push(BuildContext context) {
+//     // 画面 B へ進む
+//     // context.push('/deckDetail');
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (context) => CardSearchFormApp()),
+//     );
+//   }
+// }

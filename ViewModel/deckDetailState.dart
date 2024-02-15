@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:uuid/uuid.dart';
 
 import '../Constant/constant.dart';
+import '../View/cardSearchFormWidget.dart';
+import 'cardSearchFormState.dart';
 
 class DeckDetail extends StatefulWidget {
   final String mode;
@@ -129,27 +131,19 @@ class _DeckDetailState extends State<DeckDetail>
 
   @override
   Widget build(BuildContext context) {
-    var appBar = AppBar(
-      backgroundColor: Colors.purple,
-      title: const Text('デッキ作成'),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.search, color: Colors.white),
-          onPressed: () => {
-            //
-          },
-        ),
-      ],
-    );
+    var appBar;
     if (mode == DeckType.CreateDeck) {
       appBar = AppBar(
         backgroundColor: Colors.purple,
         title: const Text('デッキ作成'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () => {
-              //
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(),
+              );
             },
           ),
         ],
@@ -160,9 +154,12 @@ class _DeckDetailState extends State<DeckDetail>
         title: const Text('デッキ編集'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () => {
-              //
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(),
+              );
             },
           ),
         ],
