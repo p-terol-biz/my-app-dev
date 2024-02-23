@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
+import '../Core/commonConverter.dart';
+
 class InsertFirestoreCardInformation {
   Future<void> insertCardInformation(List<CsvData> csvDataList) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -14,9 +16,13 @@ class InsertFirestoreCardInformation {
 
   Future<void> addCardInformation(
       CollectionReference cardInformation, CsvData csvData) async {
+    String cardId = CardIdFromSeasonAndCharacterNumber(
+        csvData.Season, csvData.CharacterCardNumber);
     DocumentReference docRef1 = await cardInformation.add({
-      'Season': csvData.Season,
-      'CharacterCardNumber': csvData.CharacterCardNumber,
+      'Season': csvData.Season.toString().padLeft(2, '0'),
+      'CharacterCardNumber':
+          csvData.CharacterCardNumber.toString().padLeft(3, '0'),
+      'cardId': cardId,
       'Rarity': csvData.Rarity,
     });
     DocumentReference docRef2 = await cardInformation
@@ -30,6 +36,7 @@ class InsertFirestoreCardInformation {
       'MusicTitleList': csvData.MusicTitleList,
       'CardAbility': csvData.CardAbilityList,
       'Supplement': csvData.Supplement,
+      'cardId': cardId,
     });
 
     await cardInformation
@@ -43,13 +50,14 @@ class InsertFirestoreCardInformation {
       'NightPower': csvData.NightPower,
       'DayPower': csvData.DayPower,
       'NightAndDayCount': csvData.NightPower,
+      'cardId': cardId,
     });
     print(cardInformation);
   }
 }
 
 class CsvData {
-  final String Season;
+  final int Season;
   final int CharacterCardNumber;
   final String Rarity;
   final String HistoryId;

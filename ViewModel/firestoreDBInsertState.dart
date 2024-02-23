@@ -61,9 +61,9 @@ Future<List<CsvData>> getCsvData(String path) async {
     MusicTitleList.add(rows[12]);
     CardAbilityList.add("");
     CsvData rowData = CsvData(
-        rows[0],
+        int.parse(rows[0]),
         // int.parse(rows[1]),
-        rows[1],
+        int.parse(rows[1]),
         rows[2],
         rows[3],
         rows[4],

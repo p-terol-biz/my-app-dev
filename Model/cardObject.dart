@@ -3,6 +3,8 @@ import 'package:myapp/Core/responseMessage.dart';
 import 'package:myapp/Repository/GetCardItemRepository.dart';
 import 'dart:async';
 
+import '../Core/commonConverter.dart';
+
 class CardObject {
   List<CardProperty> cardList;
   ResultProperty resultProperty;
@@ -41,8 +43,7 @@ class CardObject {
           int index = i * _zutomayoCardSeasonLengthList[i] + j;
           if (results[index] != ResultPropertyConstants.StatusError) {
             cardList.add(CardProperty(
-                i.toString().padLeft(2, '0') + j.toString().padLeft(5, '0'),
-                results[index]));
+                CardIdFromSeasonAndCharacterNumber(i, j), results[index]));
           }
         }
       }
