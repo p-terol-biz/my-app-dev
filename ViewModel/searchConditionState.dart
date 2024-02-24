@@ -1,54 +1,56 @@
 import 'package:flutter/material.dart';
 
+import 'cardSearchFormState.dart';
+
 class SearchConditionWidget extends StatefulWidget {
+  final SearchConditionList searchConditionList;
+
+  SearchConditionWidget({required this.searchConditionList});
   @override
-  _SearchConditionWidgetState createState() => _SearchConditionWidgetState();
+  _SearchConditionWidgetState createState() =>
+      _SearchConditionWidgetState(searchConditionList: searchConditionList);
 }
 
 class _SearchConditionWidgetState extends State<SearchConditionWidget> {
-  Map<String, bool> IsUsingList_CardAttribute = {};
-  Map<String, bool> IsUsingList_CardType = {};
-  Map<String, bool> IsUsingList_Cost = {};
-  Map<String, bool> IsUsingList_SendToPower = {};
-  Map<String, bool> IsUsingList_NightDayCount = {};
-  Map<String, bool> IsUsingList_Rarity = {};
+  final SearchConditionList searchConditionList;
 
-  List<double> NumberOfNightPower = [];
-  List<double> NumberOfDayPower = [];
+  _SearchConditionWidgetState({required this.searchConditionList});
 
   void initState() {
     super.initState();
-    IsUsingList_CardAttribute["Dark"] = false;
-    IsUsingList_CardAttribute["Fire"] = false;
-    IsUsingList_CardAttribute["Thunder"] = false;
-    IsUsingList_CardAttribute["Storm"] = false;
-    IsUsingList_CardType["Character"] = false;
-    IsUsingList_CardType["Enchant"] = false;
-    IsUsingList_CardType["Erea Enchant"] = false;
-    IsUsingList_Cost["0"] = false;
-    IsUsingList_Cost["1"] = false;
-    IsUsingList_Cost["2"] = false;
-    IsUsingList_Cost["3"] = false;
-    IsUsingList_Cost["4"] = false;
-    IsUsingList_Cost["5"] = false;
-    IsUsingList_Cost["6"] = false;
-    IsUsingList_Cost["7+"] = false;
-    IsUsingList_SendToPower["0"] = false;
-    IsUsingList_SendToPower["1"] = false;
-    IsUsingList_SendToPower["2"] = false;
-    IsUsingList_SendToPower["3"] = false;
-    IsUsingList_SendToPower["4+"] = false;
-    IsUsingList_NightDayCount["0"] = false;
-    IsUsingList_NightDayCount["1"] = false;
-    IsUsingList_NightDayCount["2"] = false;
-    IsUsingList_NightDayCount["3"] = false;
-    IsUsingList_NightDayCount["4+"] = false;
-    NumberOfNightPower.add(50);
-    NumberOfDayPower.add(50);
-    IsUsingList_Rarity["UR"] = false;
-    IsUsingList_Rarity["SR"] = false;
-    IsUsingList_Rarity["R"] = false;
-    IsUsingList_Rarity["N"] = false;
+    searchConditionList.IsUsingList_CardAttribute["Dark"] = false;
+    searchConditionList.IsUsingList_CardAttribute["Fire"] = false;
+    searchConditionList.IsUsingList_CardAttribute["Thunder"] = false;
+    searchConditionList.IsUsingList_CardAttribute["Storm"] = false;
+    searchConditionList.IsUsingList_CardType["Character"] = false;
+    searchConditionList.IsUsingList_CardType["Enchant"] = false;
+    searchConditionList.IsUsingList_CardType["Erea Enchant"] = false;
+    searchConditionList.IsUsingList_Cost["0"] = false;
+    searchConditionList.IsUsingList_Cost["1"] = false;
+    searchConditionList.IsUsingList_Cost["2"] = false;
+    searchConditionList.IsUsingList_Cost["3"] = false;
+    searchConditionList.IsUsingList_Cost["4"] = false;
+    searchConditionList.IsUsingList_Cost["5"] = false;
+    searchConditionList.IsUsingList_Cost["6"] = false;
+    searchConditionList.IsUsingList_Cost["7+"] = false;
+    searchConditionList.IsUsingList_SendToPower["0"] = false;
+    searchConditionList.IsUsingList_SendToPower["1"] = false;
+    searchConditionList.IsUsingList_SendToPower["2"] = false;
+    searchConditionList.IsUsingList_SendToPower["3"] = false;
+    searchConditionList.IsUsingList_SendToPower["4+"] = false;
+    searchConditionList.IsUsingList_NightDayCount["0"] = false;
+    searchConditionList.IsUsingList_NightDayCount["1"] = false;
+    searchConditionList.IsUsingList_NightDayCount["2"] = false;
+    searchConditionList.IsUsingList_NightDayCount["3"] = false;
+    searchConditionList.IsUsingList_NightDayCount["4+"] = false;
+    searchConditionList.IsUsingList_NightPower.add(false);
+    searchConditionList.IsUsingList_DayPower.add(false);
+    searchConditionList.NumberOf_NightPower.add(50);
+    searchConditionList.NumberOf_DayPower.add(50);
+    searchConditionList.IsUsingList_Rarity["UR"] = false;
+    searchConditionList.IsUsingList_Rarity["SR"] = false;
+    searchConditionList.IsUsingList_Rarity["R"] = false;
+    searchConditionList.IsUsingList_Rarity["N"] = false;
   }
 
   void _incrementCounter() {
@@ -182,7 +184,8 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
     );
   }
 
-  Container SliderContainer(String titleName, List<double> targetNumber) {
+  Container SliderContainer(
+      String titleName, List<bool> targetIsUsing, List<double> targetNumber) {
     double maxSlide = 210;
     double minSlide = 0;
     int devideSlide = ((maxSlide - minSlide) / 10).toInt();
@@ -214,17 +217,35 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
           SizedBox(height: 8.0),
           Container(
             child: Center(
-              child: Slider(
-                value: targetNumber[0], // 値を指定
-                divisions: devideSlide,
-                min: minSlide,
-                max: maxSlide,
-                onChanged: (value) {
-                  // 変更した値を代入
-                  setState(() {
-                    targetNumber[0] = value;
-                  });
-                },
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    child: Checkbox(
+                      value: targetIsUsing[0],
+                      onChanged: (value) {
+                        setState(() {
+                          targetIsUsing[0] = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: targetNumber[0], // 値を指定
+                      divisions: devideSlide,
+                      min: minSlide,
+                      max: maxSlide,
+                      onChanged: targetIsUsing[0]
+                          ? (value) {
+                              // 変更した値を代入
+                              setState(() {
+                                targetNumber[0] = value;
+                              });
+                            }
+                          : null,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -238,14 +259,22 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
     return Container(
       child: Column(
         children: <Widget>[
-          CheckBoxContainer('Card Attrubute', IsUsingList_CardAttribute),
-          CheckBoxContainer('Card Type', IsUsingList_CardType),
-          InkWellContainer('Cost', IsUsingList_Cost),
-          InkWellContainer('Send To Power', IsUsingList_SendToPower),
-          InkWellContainer('NightDay Count', IsUsingList_NightDayCount),
-          SliderContainer('NightPower', NumberOfNightPower),
-          SliderContainer('DayPower', NumberOfDayPower),
-          CheckBoxContainer('Rarity', IsUsingList_Rarity),
+          CheckBoxContainer(
+              'Card Attrubute', searchConditionList.IsUsingList_CardAttribute),
+          CheckBoxContainer(
+              'Card Type', searchConditionList.IsUsingList_CardType),
+          InkWellContainer('Cost', searchConditionList.IsUsingList_Cost),
+          InkWellContainer(
+              'Send To Power', searchConditionList.IsUsingList_SendToPower),
+          InkWellContainer(
+              'NightDay Count', searchConditionList.IsUsingList_NightDayCount),
+          SliderContainer(
+              'NightPower',
+              searchConditionList.IsUsingList_NightPower,
+              searchConditionList.NumberOf_NightPower),
+          SliderContainer('DayPower', searchConditionList.IsUsingList_DayPower,
+              searchConditionList.NumberOf_DayPower),
+          CheckBoxContainer('Rarity', searchConditionList.IsUsingList_Rarity),
         ],
       ),
     );
@@ -294,13 +323,13 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
             subtitle: Container(
               child: Center(
                 child: Row(
-                  children: IsUsingList_CardType.keys.map((key) {
+                  children: searchConditionList.IsUsingList_CardType.keys.map((key) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: <Widget>[
                           Checkbox(
-                            value: IsUsingList_CardType[key],
+                            value: searchConditionList.IsUsingList_CardType[key],
                             onChanged: (value) {
                               IsUsingList_Attribute[key] = value!;
                             },
@@ -324,7 +353,7 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
             subtitle: Container(
               child: Center(
                 child: Row(
-                  children: IsUsingList_Cost.keys.map((key) {
+                  children: searchConditionList.IsUsingList_Cost.keys.map((key) {
                     return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: InkWell(
@@ -332,10 +361,10 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
                               const BorderRadius.all(Radius.circular(32)),
                           onTap: () {
                             // ここに tap されたときの処理
-                            if (IsUsingList_Cost[key] == true) {
-                              IsUsingList_Cost[key] = false;
+                            if (searchConditionList.IsUsingList_Cost[key] == true) {
+                              searchConditionList.IsUsingList_Cost[key] = false;
                             } else {
-                              IsUsingList_Cost[key] = true;
+                              searchConditionList.IsUsingList_Cost[key] = true;
                             }
                             print(key);
                           },
@@ -351,12 +380,12 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
                                 color: Colors.pink,
                               ),
                               color:
-                                  IsUsingList_Cost[key]! ? Colors.pink : null,
+                                  searchConditionList.IsUsingList_Cost[key]! ? Colors.pink : null,
                             ),
                             child: Text(
                               key,
                               style: TextStyle(
-                                color: IsUsingList_Cost[key]!
+                                color: searchConditionList.IsUsingList_Cost[key]!
                                     ? Colors.white
                                     : Colors.pink,
                                 fontWeight: FontWeight.bold,
@@ -478,13 +507,13 @@ return Container(
             subtitle: Container(
               child: Center(
                 child: Row(
-                  children: IsUsingList_CardType.keys.map((key) {
+                  children: searchConditionList.IsUsingList_CardType.keys.map((key) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: <Widget>[
                           Checkbox(
-                            value: IsUsingList_CardType[key],
+                            value: searchConditionList.IsUsingList_CardType[key],
                             onChanged: (value) {
                               IsUsingList_Attribute[key] = value!;
                             },
@@ -508,7 +537,7 @@ return Container(
             subtitle: Container(
               child: Center(
                 child: Row(
-                  children: IsUsingList_Cost.keys.map((key) {
+                  children: searchConditionList.IsUsingList_Cost.keys.map((key) {
                     return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: InkWell(
@@ -516,10 +545,10 @@ return Container(
                               const BorderRadius.all(Radius.circular(32)),
                           onTap: () {
                             // ここに tap されたときの処理
-                            if (IsUsingList_Cost[key] == true) {
-                              IsUsingList_Cost[key] = false;
+                            if (searchConditionList.IsUsingList_Cost[key] == true) {
+                              searchConditionList.IsUsingList_Cost[key] = false;
                             } else {
-                              IsUsingList_Cost[key] = true;
+                              searchConditionList.IsUsingList_Cost[key] = true;
                             }
                             print(key);
                           },
@@ -535,12 +564,12 @@ return Container(
                                 color: Colors.pink,
                               ),
                               color:
-                                  IsUsingList_Cost[key]! ? Colors.pink : null,
+                                  searchConditionList.IsUsingList_Cost[key]! ? Colors.pink : null,
                             ),
                             child: Text(
                               key,
                               style: TextStyle(
-                                color: IsUsingList_Cost[key]!
+                                color: searchConditionList.IsUsingList_Cost[key]!
                                     ? Colors.white
                                     : Colors.pink,
                                 fontWeight: FontWeight.bold,

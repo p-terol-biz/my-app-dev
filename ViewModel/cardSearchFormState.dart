@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/ViewModel/searchConditionState.dart';
 
+import '../Core/commonConverter.dart';
+
 class SearchState {
   Set<String> searchResults = {};
   Map<String, bool> IsUsingList_Attribute = {};
@@ -55,33 +57,21 @@ class SearchState {
   // }
 }
 
+class SearchConditionList {
+  Map<String, bool> IsUsingList_CardAttribute = {};
+  Map<String, bool> IsUsingList_CardType = {};
+  Map<String, bool> IsUsingList_Cost = {};
+  Map<String, bool> IsUsingList_SendToPower = {};
+  Map<String, bool> IsUsingList_NightDayCount = {};
+  Map<String, bool> IsUsingList_Rarity = {};
+  List<bool> IsUsingList_NightPower = [];
+  List<bool> IsUsingList_DayPower = [];
+  List<double> NumberOf_NightPower = [];
+  List<double> NumberOf_DayPower = [];
+}
+
 class CustomSearchDelegate extends SearchDelegate<String> {
-  // 他のメソッドは省略
-  // final SearchState searchState;
-
-  // CustomSearchDelegate(this.searchState);
-
-  // Map<String, bool> IsUsingList_Attribute = {};
-  // Map<String, bool> IsUsingList_CardType = {};
-  // Map<String, bool> IsUsingList_Cost = {};
-
-  // CustomSearchDelegate() {
-  //   IsUsingList_Attribute["Dark"] = false;
-  //   IsUsingList_Attribute["Fire"] = false;
-  //   IsUsingList_Attribute["Thunder"] = false;
-  //   IsUsingList_Attribute["Storm"] = false;
-  //   IsUsingList_CardType["Character"] = false;
-  //   IsUsingList_CardType["Enchant"] = false;
-  //   IsUsingList_CardType["Erea Enchant"] = false;
-  //   IsUsingList_Cost["0"] = false;
-  //   IsUsingList_Cost["1"] = false;
-  //   IsUsingList_Cost["2"] = false;
-  //   IsUsingList_Cost["3"] = false;
-  //   IsUsingList_Cost["4"] = false;
-  //   IsUsingList_Cost["5"] = false;
-  //   IsUsingList_Cost["6"] = false;
-  //   IsUsingList_Cost["7+"] = false;
-  // }
+  SearchConditionList searchConditionList = SearchConditionList();
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -123,17 +113,27 @@ class CustomSearchDelegate extends SearchDelegate<String> {
     ];
   }
 
-  Future<List<Map<String, dynamic>>> fetchDataFromFirestore() async {
+  Future<List<Map<String, dynamic>>> fetchDataFromFirestore(
+      Map<String, List<String>> CardHistoryList) async {
     List<Map<String, dynamic>> dataList = [];
 
     try {
       print("query");
       print(query);
-      QuerySnapshot<Map<String, dynamic>> querySnapshot =
-          await FirebaseFirestore.instance
-              .collectionGroup('CardHistoryProperty')
-              .where("CardName", isGreaterThanOrEqualTo: query)
-              .get();
+
+      // var crdHistoryPropertyQuery =
+      //     FirebaseFirestore.instance.collectionGroup('CardHistoryProperty');
+
+      Query<Map<String, dynamic>> querymap = await FirebaseFirestore.instance
+          .collectionGroup('CardHistoryProperty');
+      // .where("CardName", isGreaterThanOrEqualTo: query)
+      // .get();
+
+      CardHistoryList["CardAttributeList"]!.forEach((element) {
+        querymap = querymap.where("CardAttributeList", arrayContains: element);
+      });
+
+      QuerySnapshot<Map<String, dynamic>> querySnapshot = await querymap.get();
 
       // データをリストに格納
       for (QueryDocumentSnapshot<Map<String, dynamic>> document
@@ -187,7 +187,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
                 Container(
                   child: Text('Suggestions for: $query'),
                 ),
-                SearchConditionWidget(),
+                SearchConditionWidget(searchConditionList: searchConditionList),
               ],
             ),
           ),
@@ -395,17 +395,55 @@ class CustomSearchDelegate extends SearchDelegate<String> {
                   onPressed: () {
                     // context.router.pop();
                   },
-                  child: const Text('キャンセル'),
+                  child: const Text('-'),
                 ),
               ),
               const SizedBox(width: dimension),
               Flexible(
                 child: OutlinedButton(
                   style: style,
-                  onPressed: () {
-                    // Something to do.
+                  onPressed: () async {
+                    // print(searchConditionList.IsUsingList_CardAttribute);
+                    Map<String, List<String>> CardHistoryList = {};
+                    searchConditionList.IsUsingList_CardAttribute.forEach(
+                        (key, value) {
+                      if (value) {
+                        List<String> targetCardHistoryList = [];
+                        if (CardHistoryList["CardAttributeList"] == null) {
+                          CardHistoryList["CardAttributeList"] = [];
+                        } else {
+                          targetCardHistoryList =
+                              CardHistoryList["CardAttributeList"]!;
+                        }
+                        targetCardHistoryList
+                            .add(CardAttributeIdFromAttributeName(key));
+                        CardHistoryList["CardAttributeList"] =
+                            targetCardHistoryList;
+                      }
+                    });
+
+                    // var crdHistoryPropertyQuery = FirebaseFirestore.instance
+                    //     .collectionGroup('CardHistoryProperty');
+
+                    // CardHistoryList["CardAttributeList"]!.forEach((element) {
+                    //   crdHistoryPropertyQuery = crdHistoryPropertyQuery
+                    //       .where("CardAttributeList", arrayContains: element);
+                    // });
+
+                    List<Map<String, dynamic>> dataList =
+                        await fetchDataFromFirestore(CardHistoryList);
+
+                    for (int i = 0; i < dataList.length; i++) {
+                      print(dataList[i]);
+                    }
+
+                    // for (int i = 0;
+                    //     i < crdHistoryPropertyQuery.
+                    //     i++) {
+                    //   print(cardInformationQuery.docs[i].data());
+                    // }
                   },
-                  child: const Text('確定'),
+                  child: const Text('Search'),
                 ),
               ),
             ],
