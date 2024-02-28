@@ -11,7 +11,6 @@ import 'dart:async';
 import 'package:uuid/uuid.dart';
 
 import '../Constant/constant.dart';
-import '../View/cardSearchFormWidget.dart';
 import 'cardSearchFormState.dart';
 
 class DeckDetail extends StatefulWidget {
@@ -19,13 +18,15 @@ class DeckDetail extends StatefulWidget {
   final String deckId;
   final String title;
   final Function updateScreen;
+  final List<String> cardIdList;
 
   const DeckDetail(
       {Key? key,
       required this.mode,
       required this.deckId,
       required this.title,
-      required this.updateScreen})
+      required this.updateScreen,
+      required this.cardIdList})
       : super(key: key);
 
   // push(BuildContext context) {
@@ -36,7 +37,11 @@ class DeckDetail extends StatefulWidget {
 
   @override
   _DeckDetailState createState() => _DeckDetailState(
-      mode: mode, deckId: deckId, title: title, updateScreen: updateScreen);
+      mode: mode,
+      deckId: deckId,
+      title: title,
+      updateScreen: updateScreen,
+      cardIdList: cardIdList);
 }
 
 class _DeckDetailState extends State<DeckDetail>
@@ -45,16 +50,19 @@ class _DeckDetailState extends State<DeckDetail>
   final String deckId;
   final String title;
   final Function updateScreen;
+  final List<String> cardIdList;
 
   _DeckDetailState(
       {required this.mode,
       required this.deckId,
       required this.title,
-      required this.updateScreen});
+      required this.updateScreen,
+      required this.cardIdList});
 
   List<CardInDeckProperty> cardInDeckList = [];
   List<CardProperty> cardList = [];
   List<String> notAllowedInDeckList = [];
+  Widget? searchResultsWidget = null;
   var cardInDeckIdURI = "";
 
   void setNotAllowedInDeckList(
@@ -82,11 +90,6 @@ class _DeckDetailState extends State<DeckDetail>
           cardInDeckId: cardInDeckId, cardId: id, cardImageURL: cardImageURL));
 
       setNotAllowedInDeckList(cardInDeckList, id);
-      // int count =
-      //     cardInDeckList.where((element) => element.cardId == id).length;
-      // if (count >= 2) {
-      //   notAllowedInDeckList.add(id);
-      // }
     });
   }
 
@@ -113,7 +116,7 @@ class _DeckDetailState extends State<DeckDetail>
 
   Future<void> setCardList() async {
     CardObject cardObject = CardObject();
-    cardList = await cardObject.getCardList();
+    cardList = await cardObject.getCardList(cardIdList);
     setState(() {});
   }
 
@@ -134,6 +137,13 @@ class _DeckDetailState extends State<DeckDetail>
     var appBar;
     if (mode == DeckType.CreateDeck) {
       appBar = AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: () {
+              DeckListViewRouter deckListViewRouter = DeckListViewRouter();
+              deckListViewRouter.push(context);
+            },
+            icon: Icon(Icons.arrow_back)),
         backgroundColor: Colors.purple,
         title: const Text('デッキ作成'),
         actions: [
@@ -142,7 +152,11 @@ class _DeckDetailState extends State<DeckDetail>
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: CustomSearchDelegate(),
+                delegate: CustomSearchDelegate(
+                    mode: mode,
+                    deckId: deckId,
+                    title: title,
+                    updateScreen: updateScreen),
               );
             },
           ),
@@ -150,6 +164,13 @@ class _DeckDetailState extends State<DeckDetail>
       );
     } else if (mode == DeckType.EditDeck) {
       appBar = AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: () {
+              DeckListViewRouter deckListViewRouter = DeckListViewRouter();
+              deckListViewRouter.push(context);
+            },
+            icon: Icon(Icons.arrow_back)),
         backgroundColor: Colors.purple,
         title: const Text('デッキ編集'),
         actions: [
@@ -158,8 +179,16 @@ class _DeckDetailState extends State<DeckDetail>
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: CustomSearchDelegate(),
+                delegate: CustomSearchDelegate(
+                    mode: mode,
+                    deckId: deckId,
+                    title: title,
+                    updateScreen: updateScreen),
               );
+
+              // if (searchResults != null) {
+              //   updateListWithSearchResults(searchResults);
+              // }
             },
           ),
         ],
@@ -173,12 +202,13 @@ class _DeckDetailState extends State<DeckDetail>
             flex: 6,
             child: Container(
                 child: SizedBox(
-                    child: ListView.builder(
-                        addAutomaticKeepAlives: true,
-                        padding: EdgeInsets.all(10),
-                        itemCount: cardList.length,
-                        itemBuilder: (c, i) => CardItem(c, cardList[i],
-                            notAllowedInDeckList, cardInDeckIdURI, mode))))),
+              child: ListView.builder(
+                  addAutomaticKeepAlives: true,
+                  padding: EdgeInsets.all(10),
+                  itemCount: cardList.length,
+                  itemBuilder: (c, i) => CardItem(c, cardList[i],
+                      notAllowedInDeckList, cardInDeckIdURI, mode)),
+            ))),
         Expanded(
           flex: 4,
           child: Container(
@@ -228,19 +258,6 @@ class _DeckDetailState extends State<DeckDetail>
             });
             DeckListViewRouter deckListViewRouter = DeckListViewRouter();
             deckListViewRouter.push(context);
-            // showDialog(
-            //   context: context,
-            //   builder: (context) {
-            //     return AlertDialog(
-            //       actions: <Widget>[
-            //         TextButton(
-            //           onPressed: () {},
-            //           child: Text('保存しました'),
-            //         ),
-            //       ],
-            //     );
-            //   },
-            // );
           }
         },
         backgroundColor: Colors.black,
@@ -251,4 +268,25 @@ class _DeckDetailState extends State<DeckDetail>
 
   @override
   bool get wantKeepAlive => true;
+
+  // Widget cardItemListWidget() {
+  //   List<CardProperty> _cardList = [];
+
+  //   if (cardIdList.isNotEmpty) {
+  //     // cardIdListに何かあったら
+  //     cardList.forEach((element) {
+  //       if (cardIdList.contains(element.id)) {
+  //         _cardList.add(element);
+  //       }
+  //     });
+  //   } else {
+  //     _cardList.addAll(cardList);
+  //   }
+  //   return ListView.builder(
+  //       addAutomaticKeepAlives: true,
+  //       padding: EdgeInsets.all(10),
+  //       itemCount: cardList.length,
+  //       itemBuilder: (c, i) => CardItem(
+  //           c, _cardList[i], notAllowedInDeckList, cardInDeckIdURI, mode));
+  // }
 }

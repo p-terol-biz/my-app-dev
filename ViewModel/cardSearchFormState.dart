@@ -3,59 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/ViewModel/searchConditionState.dart';
 
 import '../Core/commonConverter.dart';
-
-class SearchState {
-  Set<String> searchResults = {};
-  Map<String, bool> IsUsingList_Attribute = {};
-  Map<String, bool> IsUsingList_CardType = {};
-  Map<String, bool> IsUsingList_Cost = {};
-
-  void updateIsUsingList_Attribute(String key) {
-    if (IsUsingList_Attribute[key] == true) {
-      IsUsingList_Attribute[key] = false;
-    } else {
-      IsUsingList_Attribute[key] = true;
-    }
-  }
-
-  void updateIsUsingList_CardType(String key) {
-    if (IsUsingList_Attribute[key] == true) {
-      IsUsingList_Attribute[key] = false;
-    } else {
-      IsUsingList_Attribute[key] = true;
-    }
-  }
-
-  void updateIsUsingList_Cost(String key) {
-    if (IsUsingList_Attribute[key] == true) {
-      IsUsingList_Attribute[key] = false;
-    } else {
-      IsUsingList_Attribute[key] = true;
-    }
-  }
-
-  SearchState() {
-    IsUsingList_Attribute["Dark"] = false;
-    IsUsingList_Attribute["Fire"] = false;
-    IsUsingList_Attribute["Thunder"] = false;
-    IsUsingList_Attribute["Storm"] = false;
-    IsUsingList_CardType["Character"] = false;
-    IsUsingList_CardType["Enchant"] = false;
-    IsUsingList_CardType["Erea Enchant"] = false;
-    IsUsingList_Cost["0"] = false;
-    IsUsingList_Cost["1"] = false;
-    IsUsingList_Cost["2"] = false;
-    IsUsingList_Cost["3"] = false;
-    IsUsingList_Cost["4"] = false;
-    IsUsingList_Cost["5"] = false;
-    IsUsingList_Cost["6"] = false;
-    IsUsingList_Cost["7+"] = false;
-  }
-
-  // void updateSearchResults(Set<String> results) {
-  //   searchResults = results;
-  // }
-}
+import '../Router/router.dart';
 
 class SearchConditionList {
   Map<String, bool> IsUsingList_CardAttribute = {};
@@ -70,40 +18,25 @@ class SearchConditionList {
   List<double> NumberOf_DayPower = [];
 }
 
-class CustomSearchDelegate extends SearchDelegate<String> {
-  SearchConditionList searchConditionList = SearchConditionList();
+class CustomSearchDelegate extends SearchDelegate {
+  final String mode;
+  final String deckId;
+  final String title;
+  final Function updateScreen;
 
+  CustomSearchDelegate(
+      {required this.mode,
+      required this.deckId,
+      required this.title,
+      required this.updateScreen});
+
+  SearchConditionList searchConditionList = SearchConditionList();
+  List<Map<String, dynamic>> dataList = [];
+  List<String> dataIdList = [];
   @override
   List<Widget> buildActions(BuildContext context) {
     // Build actions for the AppBar (e.g., clear query button)
     return [
-      // IconButton(
-      //   icon: Icon(Icons.search),
-      //   onPressed: () async {
-      //     List<Map<String, dynamic>> dataList = await fetchDataFromFirestore();
-      //     print("dataList[0]");
-      //     print(dataList[0]);
-      //     // queryの単語でFirestoreのDBを検索
-      //     // final crdHistoryPropertyQuery = FirebaseFirestore.instance
-      //     //     .collectionGroup('CardHistoryProperty')
-      //     //     .where("CardName", isGreaterThanOrEqualTo: query)
-      //     //     .snapshots();
-
-      //     // crdHistoryPropertyQuery.
-
-      //     // crdHistoryPropertyQuery.map((DocumentSnapshot document) {
-      //     //     Map<String, dynamic> data =
-      //     //         document.data()! as Map<String, dynamic>;
-      //     //     return ListTile(
-      //     //       title: Text(data['text']),
-      //     //     );
-      //     //   }).toList(),
-
-      //     // for (int i = 0; i < crdHistoryPropertyQuery.docs.length; i++) {
-      //     //   print(cardInformationQuery.docs[i].data());
-      //     // }
-      //   },
-      // ),
       IconButton(
         icon: Icon(Icons.clear),
         onPressed: () {
@@ -113,21 +46,11 @@ class CustomSearchDelegate extends SearchDelegate<String> {
     ];
   }
 
-  Future<List<Map<String, dynamic>>> fetchDataFromFirestore(
-      Map<String, List<String>> CardHistoryList) async {
-    List<Map<String, dynamic>> dataList = [];
-
+  Future<void> fetchDataFromFirestore(
+      BuildContext context, Map<String, List<String>> CardHistoryList) async {
     try {
-      print("query");
-      print(query);
-
-      // var crdHistoryPropertyQuery =
-      //     FirebaseFirestore.instance.collectionGroup('CardHistoryProperty');
-
       Query<Map<String, dynamic>> querymap = await FirebaseFirestore.instance
           .collectionGroup('CardHistoryProperty');
-      // .where("CardName", isGreaterThanOrEqualTo: query)
-      // .get();
 
       CardHistoryList["CardAttributeList"]!.forEach((element) {
         querymap = querymap.where("CardAttributeList", arrayContains: element);
@@ -139,16 +62,14 @@ class CustomSearchDelegate extends SearchDelegate<String> {
       for (QueryDocumentSnapshot<Map<String, dynamic>> document
           in querySnapshot.docs) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-        dataList.add(data);
+
+        dataIdList.add(data["cardId"].toString());
       }
 
       // データを内部で保持したい場合はここで dataList を使用できます
-      print('Data List: $dataList');
     } catch (e) {
       print('Error fetching data: $e');
     }
-
-    return dataList;
   }
 
   @override
@@ -157,7 +78,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
     return IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
-        close(context, "");
+        close(context, Container());
       },
     );
   }
@@ -165,19 +86,11 @@ class CustomSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     // Build the results based on the current query
-    // 検索でEnterを押されるときどうする
-    return Center(
-      child: Text('Search results for: $query'),
-    );
+    return Container();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Build suggestions based on the current query
-    // return Center(
-    //   child: Text('Suggestions for: $query'),
-    // );
-
     return Column(
       children: <Widget>[
         Expanded(
@@ -403,7 +316,6 @@ class CustomSearchDelegate extends SearchDelegate<String> {
                 child: OutlinedButton(
                   style: style,
                   onPressed: () async {
-                    // print(searchConditionList.IsUsingList_CardAttribute);
                     Map<String, List<String>> CardHistoryList = {};
                     searchConditionList.IsUsingList_CardAttribute.forEach(
                         (key, value) {
@@ -422,26 +334,12 @@ class CustomSearchDelegate extends SearchDelegate<String> {
                       }
                     });
 
-                    // var crdHistoryPropertyQuery = FirebaseFirestore.instance
-                    //     .collectionGroup('CardHistoryProperty');
+                    await fetchDataFromFirestore(context, CardHistoryList);
+                    DeckDetailViewRouter deckDetailViewRouter =
+                        DeckDetailViewRouter();
 
-                    // CardHistoryList["CardAttributeList"]!.forEach((element) {
-                    //   crdHistoryPropertyQuery = crdHistoryPropertyQuery
-                    //       .where("CardAttributeList", arrayContains: element);
-                    // });
-
-                    List<Map<String, dynamic>> dataList =
-                        await fetchDataFromFirestore(CardHistoryList);
-
-                    for (int i = 0; i < dataList.length; i++) {
-                      print(dataList[i]);
-                    }
-
-                    // for (int i = 0;
-                    //     i < crdHistoryPropertyQuery.
-                    //     i++) {
-                    //   print(cardInformationQuery.docs[i].data());
-                    // }
+                    deckDetailViewRouter.push(
+                        context, mode, deckId, title, updateScreen, dataIdList);
                   },
                   child: const Text('Search'),
                 ),

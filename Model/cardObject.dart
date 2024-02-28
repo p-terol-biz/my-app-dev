@@ -16,7 +16,7 @@ class CardObject {
         resultProperty = resultProperty ?? ResultProperty();
 
   // Get
-  Future<List<CardProperty>> getCardList() async {
+  Future<List<CardProperty>> getCardList(List<String> cardIdList) async {
     GetCardItemRepository getCardItemRepository = GetCardItemRepository();
     String _imagePath = ConnectionString.ImagePath;
     List<String> _zutomayoCardSeasonList = [];
@@ -42,8 +42,20 @@ class CardObject {
         for (int j = 0; j < _zutomayoCardSeasonLengthList[i]; j++) {
           int index = i * _zutomayoCardSeasonLengthList[i] + j;
           if (results[index] != ResultPropertyConstants.StatusError) {
-            cardList.add(CardProperty(
-                CardIdFromSeasonAndCharacterNumber(i, j), results[index]));
+            if (cardIdList.isNotEmpty) {
+              if (cardIdList
+                  .contains(CardIdFromSeasonAndCharacterNumber(i + 1, j + 1))) {
+                print('Object getCardList cardId: ' +
+                    CardIdFromSeasonAndCharacterNumber(i + 1, j + 1));
+                cardList.add(CardProperty(
+                    CardIdFromSeasonAndCharacterNumber(i + 1, j + 1),
+                    results[index]));
+              }
+            } else {
+              cardList.add(CardProperty(
+                  CardIdFromSeasonAndCharacterNumber(i + 1, j + 1),
+                  results[index]));
+            }
           }
         }
       }

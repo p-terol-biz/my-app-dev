@@ -69,8 +69,8 @@ class DeckList extends State {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            deckDetailViewRouter.push(
-                context, DeckType.CreateDeck, "", "", updateScreen);
+            deckDetailViewRouter
+                .push(context, DeckType.CreateDeck, "", "", updateScreen, []);
           });
         },
         backgroundColor: Colors.black,

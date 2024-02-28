@@ -73,8 +73,8 @@ Widget DeckItem(
   DeckDetailViewRouter deckDetailViewRouter = DeckDetailViewRouter();
 
   return GestureDetector(
-      onTap: () => deckDetailViewRouter.push(
-          context, DeckType.EditDeck, model.deckId, model.title, updateScreen),
+      onTap: () => deckDetailViewRouter.push(context, DeckType.EditDeck,
+          model.deckId, model.title, updateScreen, []),
       child: Container(
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(

@@ -16,8 +16,14 @@ class DeckListViewRouter {
 }
 
 class DeckDetailViewRouter {
-  push(BuildContext context, String mode, String deckId, String title,
-      Function updateScreen) {
+  push(
+    BuildContext context,
+    String mode,
+    String deckId,
+    String title,
+    Function updateScreen,
+    List<String> cardIdList,
+  ) {
     // 画面 B へ進む
     // context.push('/deckDetail');
     Navigator.push(
@@ -27,7 +33,8 @@ class DeckDetailViewRouter {
               mode: mode,
               deckId: deckId,
               title: title,
-              updateScreen: updateScreen)),
+              updateScreen: updateScreen,
+              cardIdList: cardIdList)),
     );
   }
 }
