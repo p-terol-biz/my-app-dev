@@ -129,7 +129,7 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
           SizedBox(height: 8.0),
           Container(
             child: Center(
-              child: Row(
+              child: Wrap(
                 children: targetList.keys.map((key) {
                   return Padding(
                       padding: const EdgeInsets.all(8.0),

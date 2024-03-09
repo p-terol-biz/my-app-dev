@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/ViewModel/searchConditionState.dart';
@@ -46,27 +47,249 @@ class CustomSearchDelegate extends SearchDelegate {
     ];
   }
 
-  Future<void> fetchDataFromFirestore(
-      BuildContext context, Map<String, List<String>> CardHistoryList) async {
-    try {
-      Query<Map<String, dynamic>> querymap = await FirebaseFirestore.instance
-          .collectionGroup('CardHistoryProperty');
+  Query<Map<String, dynamic>> getQueryMap(
+      String key, Map<String, List<String>> value) {
+    Map<String, Query<Map<String, dynamic>>> queryMap = {};
+    print("333");
 
-      CardHistoryList["CardAttributeList"]!.forEach((element) {
-        querymap = querymap.where("CardAttributeList", arrayContains: element);
-      });
+    Query<Map<String, dynamic>> query =
+        FirebaseFirestore.instance.collectionGroup(key);
+    // queryMap[key] = FirebaseFirestore.instance.collectionGroup(key);
+/*
+    value.forEach((key2, value2) async {
+      switch (key2) {
+        case 'CardAttributeList':
+          for (String value3 in value2) {
+            print("key: " + key2 + " value3: " + value3);
 
-      QuerySnapshot<Map<String, dynamic>> querySnapshot = await querymap.get();
+            queryMap[key1] =
+                await queryMap[key1]!.where(key2, arrayContains: value3);
+          }
 
-      // データをリストに格納
+          break;
+        // default:
+        // queryMap[key1] =
+        //     queryMap[key1]!.where(key2, arrayContains: value2);
+      }
+      // print("key: " + key2 + " value2: " + value2.toString());
+      // print("InFunction fetchDataFromFirestore key " +
+      //     key1 +
+      //     " queryMap: " +
+      //     queryMap[key1].toString());
+    });
+    */
+    queryMap["CardHistoryProperty"] =
+        query.where("CardAttributeList", arrayContains: "4");
+    print("333-fin");
+
+    // return queryMap;
+    return query.where("CardAttributeList", arrayContains: "4");
+  }
+
+  Future<Map<String, QuerySnapshot<Map<String, dynamic>>>> getQuerySnapshotMap(
+      Map<String, Map<String, List<String>>> whereList) async {
+    Map<String, QuerySnapshot<Map<String, dynamic>>> querySnapshotMap = {};
+    Map<String, Query<Map<String, dynamic>>> queryMap = {};
+    print("222");
+
+    // Completer completer = Completer<String>();
+
+    whereList.forEach((key, value) async {
+      // getQueryMap(key, value).then((_queryMap) {
+      //   completer.complete(_queryMap);
+      // });
+      // queryMap[key] = await completer.future as Query<Map<String, dynamic>>;
+      queryMap["CardHistoryProperty"] = getQueryMap(key, value);
+      // queryMap[key] = (getQueryMap(key, value)) as Query<Map<String, dynamic>>;
+      // querySnapshotMap[key1] = await queryMap[key1]!.get();
+
+      querySnapshotMap["CardHistoryProperty"] =
+          await queryMap["CardHistoryProperty"]!.get();
+    });
+    print("222-fin");
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await queryMap["CardHistoryProperty"]!.get();
+
+    for (QueryDocumentSnapshot<Map<String, dynamic>> document
+        in querySnapshot.docs) {
+      print("bbb");
+
+      Map<String, dynamic> data = await document.data() as Map<String, dynamic>;
+      print("ccc");
+      print("data: " + data["cardId"].toString());
+      // _dataIdList.add(await data["cardId"].toString());
+    }
+    // print("_dataIdList: $_dataIdList");
+
+    return querySnapshotMap;
+  }
+
+  Future<List<String>> getDataIdList(
+      Map<String, QuerySnapshot<Map<String, dynamic>>> querySnapshotMap) async {
+    List<String> dataIdList = [];
+    querySnapshotMap.forEach((key, value) async {
       for (QueryDocumentSnapshot<Map<String, dynamic>> document
-          in querySnapshot.docs) {
+          in await querySnapshotMap[key]!.docs) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
         dataIdList.add(data["cardId"].toString());
       }
+    });
+    return dataIdList;
+  }
 
-      // データを内部で保持したい場合はここで dataList を使用できます
+  Future<void> fetchDataFromFirestore(BuildContext context,
+      Map<String, Map<String, List<String>>> whereList) async {
+    try {
+      // Map<String, Query<Map<String, dynamic>>> queryMap = {};
+      Map<String, QuerySnapshot<Map<String, dynamic>>> querySnapshotMap = {};
+      // Query<Map<String, dynamic>>? _queryMap = null;
+      // QuerySnapshot<Map<String, dynamic>>? _querySnapshotMap = null;
+      List<String> _dataIdList = [];
+
+      // Query<Map<String, dynamic>> _queryMap = await FirebaseFirestore.instance
+      //     .collectionGroup("CardHistoryProperty")
+      //     .where("CardAttributeList", arrayContains: "4");
+
+      // QuerySnapshot<Map<String, dynamic>> _querySnapshotMap =
+      //     await _queryMap.get();
+      // print("111");
+      // querySnapshotMap = await getQuerySnapshotMap(whereList);
+      // print("111-fin");
+      List<Query<Map<String, dynamic>>> queryList = [];
+      whereList.forEach((key, value) {
+        switch (key) {
+          case 'CardHistoryProperty':
+            value.forEach((cardHistoryKey, cardHistoryValue) {
+              switch (cardHistoryKey) {
+                case 'CardAttributeList':
+                  if (cardHistoryValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardHistoryValue) {
+                      query =
+                          query.where("CardAttributeList", arrayContains: val);
+                    }
+                    queryList.add(query);
+                  }
+
+                  break;
+                case 'CardType':
+                  if (cardHistoryValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardHistoryValue) {
+                      query = query.where("CardType", isEqualTo: val);
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                default:
+              }
+            });
+            break;
+          case 'CardPowerProperty':
+            value.forEach((cardPowerKey, cardPowerValue) {
+              switch (cardPowerKey) {
+                case 'PowerCost':
+                  if (cardPowerValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardPowerValue) {
+                      if (val == "7+") {
+                        query = query.where("PowerCost",
+                            isGreaterThanOrEqualTo: "7");
+                      } else {
+                        query = query.where("PowerCost", isEqualTo: val);
+                      }
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                case 'SendToPower':
+                  if (cardPowerValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardPowerValue) {
+                      if (val == "4+") {
+                        query = query.where("SendToPower",
+                            isGreaterThanOrEqualTo: "4");
+                      } else {
+                        query = query.where("SendToPower", isEqualTo: val);
+                      }
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                case 'NightDayCount':
+                  if (cardPowerValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardPowerValue) {
+                      if (val == "4+") {
+                        query = query.where("NightDayCount",
+                            isGreaterThanOrEqualTo: "4");
+                      } else {
+                        query = query.where("NightDayCount", isEqualTo: val);
+                      }
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                default:
+              }
+            });
+            break;
+          case 'CardInformation':
+            value.forEach((cardInformationKey, cardInformationValue) {
+              switch (cardInformationKey) {
+                case 'Rarity':
+                  if (cardInformationValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardInformationValue) {
+                      query = query.where("Rarity", isEqualTo: val);
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                default:
+              }
+            });
+            break;
+          default:
+            print("default !");
+        }
+      });
+
+      if (queryList.length > 0) {
+        for (int i = 0; i < queryList.length; i++) {
+          QuerySnapshot<Map<String, dynamic>> querySnapshot =
+              await queryList[i].get();
+          List<String> _dataIdList = [];
+
+          for (QueryDocumentSnapshot<Map<String, dynamic>> document
+              in querySnapshot.docs) {
+            Map<String, dynamic> data = document.data();
+
+            _dataIdList.add(data["cardId"].toString());
+          }
+          if (i == 0) {
+            dataIdList.addAll(_dataIdList);
+          } else {
+            dataList = dataList
+                .where((element) => _dataIdList.contains(element))
+                .toSet()
+                .toList();
+          }
+        }
+      }
     } catch (e) {
       print('Error fetching data: $e');
     }
@@ -106,185 +329,6 @@ class CustomSearchDelegate extends SearchDelegate {
           ),
         ),
         _buildFooter(context),
-
-        // Expanded(
-        //     child: ListView(
-        //   children: <Widget>[
-        //     ListTile(
-        //       title: Text(
-        //         'Attribute',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Container(
-        //         child: Center(
-        //           child: Row(
-        //             mainAxisAlignment: MainAxisAlignment.center,
-        //             children: IsUsingList_Attribute.keys.map((key) {
-        //               return Padding(
-        //                 padding: const EdgeInsets.all(8.0),
-        //                 child: Column(
-        //                   children: <Widget>[
-        //                     Checkbox(
-        //                       value: IsUsingList_Attribute[key],
-        //                       onChanged: (value) {
-        //                         IsUsingList_Attribute[key] = value!;
-        //                       },
-        //                     ),
-        //                     Text(key)
-        //                   ],
-        //                 ),
-        //               );
-        //             }).toList(),
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Card Type',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Container(
-        //         child: Center(
-        //           child: Row(
-        //             children: IsUsingList_CardType.keys.map((key) {
-        //               return Padding(
-        //                 padding: const EdgeInsets.all(8.0),
-        //                 child: Column(
-        //                   children: <Widget>[
-        //                     Checkbox(
-        //                       value: IsUsingList_CardType[key],
-        //                       onChanged: (value) {
-        //                         IsUsingList_Attribute[key] = value!;
-        //                       },
-        //                     ),
-        //                     Text(key)
-        //                   ],
-        //                 ),
-        //               );
-        //             }).toList(),
-        //             mainAxisAlignment: MainAxisAlignment.center,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Cost',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Container(
-        //         child: Center(
-        //           child: Row(
-        //             children: IsUsingList_Cost.keys.map((key) {
-        //               return Padding(
-        //                   padding: const EdgeInsets.all(8.0),
-        //                   child: InkWell(
-        //                     borderRadius:
-        //                         const BorderRadius.all(Radius.circular(32)),
-        //                     onTap: () {
-        //                       // ここに tap されたときの処理
-        //                       if (IsUsingList_Cost[key] == true) {
-        //                         IsUsingList_Cost[key] = false;
-        //                       } else {
-        //                         IsUsingList_Cost[key] = true;
-        //                       }
-        //                       print(key);
-        //                     },
-        //                     child: AnimatedContainer(
-        //                       duration: const Duration(milliseconds: 200),
-        //                       padding: const EdgeInsets.symmetric(
-        //                           horizontal: 16, vertical: 8),
-        //                       decoration: BoxDecoration(
-        //                         borderRadius:
-        //                             const BorderRadius.all(Radius.circular(32)),
-        //                         border: Border.all(
-        //                           width: 2,
-        //                           color: Colors.pink,
-        //                         ),
-        //                         color:
-        //                             IsUsingList_Cost[key]! ? Colors.pink : null,
-        //                       ),
-        //                       child: Text(
-        //                         key,
-        //                         style: TextStyle(
-        //                           color: IsUsingList_Cost[key]!
-        //                               ? Colors.white
-        //                               : Colors.pink,
-        //                           fontWeight: FontWeight.bold,
-        //                         ),
-        //                       ),
-        //                     ),
-        //                   ));
-        //             }).toList(),
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Send To Power',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Night Day Count',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Night Power',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Day Power',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Rarity',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //     Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Ability',
-        //         style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),
-        //       ),
-        //       subtitle: Center(
-        //         child: Text("Test detail 003"),
-        //       ),
-        //     ),
-        //   ],
-        // ))
       ],
     );
   }
@@ -316,25 +360,63 @@ class CustomSearchDelegate extends SearchDelegate {
                 child: OutlinedButton(
                   style: style,
                   onPressed: () async {
-                    Map<String, List<String>> CardHistoryList = {};
-                    searchConditionList.IsUsingList_CardAttribute.forEach(
-                        (key, value) {
-                      if (value) {
-                        List<String> targetCardHistoryList = [];
-                        if (CardHistoryList["CardAttributeList"] == null) {
-                          CardHistoryList["CardAttributeList"] = [];
-                        } else {
-                          targetCardHistoryList =
-                              CardHistoryList["CardAttributeList"]!;
-                        }
-                        targetCardHistoryList
-                            .add(CardAttributeIdFromAttributeName(key));
-                        CardHistoryList["CardAttributeList"] =
-                            targetCardHistoryList;
-                      }
-                    });
+                    Map<String, Map<String, List<String>>> whereList = {};
+                    // Map<String, List<String>> CardHistoryList = {};
+                    whereList["CardHistoryProperty"] = {};
+                    whereList["CardPowerProperty"] = {};
+                    whereList["CardInformation"] = {};
 
-                    await fetchDataFromFirestore(context, CardHistoryList);
+                    whereList["CardHistoryProperty"]?["CardAttributeList"] =
+                        getCardHistoryList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_CardAttribute,
+                            convertKeyFunction:
+                                CardAttributeIdFromCardAttributeName);
+
+                    whereList["CardHistoryProperty"]?["CardType"] =
+                        getCardHistoryList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_CardType,
+                            convertKeyFunction: CardTypeIdFromCardTypeName);
+
+                    whereList["CardPowerProperty"]?["PowerCost"] =
+                        getCardPowerList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_Cost);
+
+                    whereList["CardPowerProperty"]?["SendToPower"] =
+                        getCardPowerList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_SendToPower);
+
+                    whereList["CardPowerProperty"]?["NightDayCount"] =
+                        getCardPowerList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_NightDayCount);
+
+                    whereList["CardInformation"]?["Rarity"] =
+                        getCardHistoryList(
+                            targetMapList:
+                                searchConditionList.IsUsingList_Rarity);
+
+                    // searchConditionList.IsUsingList_CardAttribute.forEach(
+                    //     (key, value) {
+                    //   if (value) {
+                    //     List<String> targetCardHistoryList = [];
+                    //     if (CardHistoryList["CardAttributeList"] == null) {
+                    //       CardHistoryList["CardAttributeList"] = [];
+                    //     } else {
+                    //       targetCardHistoryList =
+                    //           CardHistoryList["CardAttributeList"]!;
+                    //     }
+                    //     targetCardHistoryList
+                    //         .add(CardAttributeIdFromAttributeName(key));
+                    //     CardHistoryList["CardAttributeList"] =
+                    //         targetCardHistoryList;
+                    //   }
+                    // });
+
+                    await fetchDataFromFirestore(context, whereList);
                     DeckDetailViewRouter deckDetailViewRouter =
                         DeckDetailViewRouter();
 
@@ -349,5 +431,45 @@ class CustomSearchDelegate extends SearchDelegate {
         ),
       ],
     );
+  }
+
+  List<String> getCardHistoryList(
+      {Map<String, bool>? targetMapList, Function? convertKeyFunction}) {
+    //targetMapListのTrueになっているKeyを取得する
+    //取得したKeyのListを返す
+    List<String> targetCardHistoryList = [];
+
+    if (targetMapList != null) {
+      targetMapList.forEach((key, value) {
+        if (value) {
+          if (convertKeyFunction != null) {
+            targetCardHistoryList.add(convertKeyFunction(key));
+          } else {
+            targetCardHistoryList.add(key);
+          }
+        }
+      });
+    }
+    return targetCardHistoryList;
+  }
+
+  List<String> getCardPowerList(
+      {Map<String, bool>? targetMapList, Function? convertKeyFunction}) {
+    //targetMapListのTrueになっているKeyを取得する
+    //取得したKeyのListを返す
+    List<String> targetCardHistoryList = [];
+
+    if (targetMapList != null) {
+      targetMapList.forEach((key, value) {
+        if (value) {
+          if (convertKeyFunction != null) {
+            targetCardHistoryList.add(convertKeyFunction(key));
+          } else {
+            targetCardHistoryList.add(key);
+          }
+        }
+      });
+    }
+    return targetCardHistoryList;
   }
 }

@@ -45,8 +45,6 @@ class CardObject {
             if (cardIdList.isNotEmpty) {
               if (cardIdList
                   .contains(CardIdFromSeasonAndCharacterNumber(i + 1, j + 1))) {
-                print('Object getCardList cardId: ' +
-                    CardIdFromSeasonAndCharacterNumber(i + 1, j + 1));
                 cardList.add(CardProperty(
                     CardIdFromSeasonAndCharacterNumber(i + 1, j + 1),
                     results[index]));

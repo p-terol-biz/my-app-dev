@@ -3,9 +3,9 @@ String CardIdFromSeasonAndCharacterNumber(int season, int characterNumber) {
       characterNumber.toString().padLeft(4, '0');
 }
 
-String CardAttributeIdFromAttributeName(String AttributeName) {
+String CardAttributeIdFromCardAttributeName(String atributeName) {
   String cardAttributeId = "";
-  switch (AttributeName) {
+  switch (atributeName) {
     case 'Dark':
       cardAttributeId = "1";
       break;
@@ -20,4 +20,20 @@ String CardAttributeIdFromAttributeName(String AttributeName) {
       break;
   }
   return cardAttributeId;
+}
+
+String CardTypeIdFromCardTypeName(String typeName) {
+  String cardTypeId = "";
+  switch (typeName) {
+    case 'Character':
+      cardTypeId = "1";
+      break;
+    case 'Enchant':
+      cardTypeId = "2";
+      break;
+    case 'Erea Enchant':
+      cardTypeId = "3";
+      break;
+  }
+  return cardTypeId;
 }
