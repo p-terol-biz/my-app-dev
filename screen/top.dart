@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screen/userLogin.dart';
+import 'package:zutomayoddeck/screen/userLogin.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/ViewModel/deckListState.dart';
+import 'package:zutomayoddeck/ViewModel/deckListState.dart';
 
 import '../ViewModel/firestoreDBInsertState.dart';
 
@@ -11,15 +11,20 @@ class MyApp extends StatelessWidget {
   final router = GoRouter(
     // パス (アプリが起動したとき)
     initialLocation: '/deckList',
+    // errorPageBuilder: (context, state) => MaterialPage(child: ErrorPage()),
     // パスと画面の組み合わせ
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => SplashScreen(),
+      ),
       GoRoute(
         path: '/userLogin',
         builder: (context, state) => const UserLogin(),
       ),
       GoRoute(
         path: '/deckList',
-        builder: (context, state) => DeckListApp(),
+        builder: (context, state) => const DeckListApp(),
       ),
       // GoRoute(
       //   path: '/deckDetail',
@@ -49,6 +54,19 @@ class MyApp extends StatelessWidget {
       routeInformationProvider: router.routeInformationProvider,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
+    );
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.purple, // 背景色を紫色に設定
+      child: Center(
+        child:
+            Image.asset('assets/zutomayocard_logo.png'), // カスタムスプラッシュ画面の画像を表示
+      ),
     );
   }
 }

@@ -1,5 +1,5 @@
-import 'package:myapp/Interface/getDownloadURL.dart';
-import 'package:myapp/Constant/constant.dart';
+import 'package:zutomayoddeck/Interface/getDownloadURL.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
 import 'dart:async';
 
 class GetCardItemRepository {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:myapp/Model/deckObject.dart';
-import 'package:myapp/Router/router.dart';
+import 'package:zutomayoddeck/Model/deckObject.dart';
+import 'package:zutomayoddeck/Router/router.dart';
 import '../Constant/constant.dart';
 
 Widget DeckItem(
@@ -13,7 +13,8 @@ Widget DeckItem(
     // 画像を丸くする
     child: ClipRRect(
       borderRadius: BorderRadius.circular(30.0),
-      child: Image.asset('${model.deckTopImageURL}'),
+      // child: Image.asset('${model.deckTopImageURL}'),
+      child: Image.asset('assets/images/zutomayocard_logo.png'),
     ),
   );
 
@@ -22,7 +23,7 @@ Widget DeckItem(
     height: 40,
     alignment: Alignment.centerLeft,
     child: Text(
-      '${model.title}',
+      "タイトル : " + "${model.title}",
       style: const TextStyle(color: Colors.grey),
     ),
   );
@@ -45,6 +46,20 @@ Widget DeckItem(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         ListTile(
+                          title: const Text('デッキ一覧の表示'),
+                          leading: const Icon(Icons.delete),
+                          onTap: () async {
+                            // 選択したデッキIDを取得
+                            // 確認ダイアログの表示
+                            // デッキDBから対象IDを削除
+                            // DeckListViewRouter deckListViewRouter =
+                            //     DeckListViewRouter();
+
+                            // deckListViewRouter.push(context);
+                            // updateScreen();
+                          },
+                        ),
+                        ListTile(
                           title: const Text('デッキ名の編集'),
                           leading: const Icon(Icons.edit),
                           onTap: () {
@@ -52,14 +67,22 @@ Widget DeckItem(
                             // デッキ名の入力
                             // デッキ名のみDB
                           },
+                          enabled: false,
                         ),
                         ListTile(
                           title: const Text('デッキの削除'),
                           leading: const Icon(Icons.delete),
-                          onTap: () {
+                          onTap: () async {
                             // 選択したデッキIDを取得
                             // 確認ダイアログの表示
                             // デッキDBから対象IDを削除
+                            DeckObject deckObject = DeckObject();
+                            await deckObject.deleteDeckList(model.deckId);
+                            // DeckListViewRouter deckListViewRouter =
+                            //     DeckListViewRouter();
+
+                            // deckListViewRouter.push(context);
+                            updateScreen();
                           },
                         ),
                       ],
@@ -79,8 +102,8 @@ Widget DeckItem(
         padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           // 全体を青い枠線で囲む
-          border: Border.all(color: Colors.blue),
-          color: Colors.white,
+          border: Border.all(color: Colors.lightGreen.shade900),
+          color: Colors.white70,
         ),
         width: double.infinity,
         // 高さ

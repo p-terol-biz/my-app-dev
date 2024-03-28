@@ -18,7 +18,7 @@ class ConnectionString {
     ZutomayoCard2nd
   ];
 
-  static const List<int> zutomayoCardSeasonLengthList = [104, 104];
+  static const List<int> zutomayoCardSeasonLengthList = [104, 0]; //[104, 104];
 }
 
 class DeckType {

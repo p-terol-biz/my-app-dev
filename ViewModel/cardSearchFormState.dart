@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/ViewModel/searchConditionState.dart';
+import 'package:zutomayoddeck/ViewModel/searchConditionState.dart';
 
 import '../Core/commonConverter.dart';
 import '../Router/router.dart';
@@ -241,6 +241,29 @@ class CustomSearchDelegate extends SearchDelegate {
                     queryList.add(query);
                   }
                   break;
+
+                case 'NightPower':
+                  if (cardPowerValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardPowerValue) {
+                      query = query.where("NightPower", isEqualTo: val);
+                    }
+                    queryList.add(query);
+                  }
+                  break;
+                case 'DayPower':
+                  if (cardPowerValue.isNotEmpty) {
+                    Query<Map<String, dynamic>> query;
+                    query = FirebaseFirestore.instance.collectionGroup(key);
+
+                    for (var val in cardPowerValue) {
+                      query = query.where("DayPower", isEqualTo: val);
+                    }
+                    queryList.add(query);
+                  }
+                  break;
                 default:
               }
             });
@@ -394,6 +417,20 @@ class CustomSearchDelegate extends SearchDelegate {
                             targetMapList:
                                 searchConditionList.IsUsingList_NightDayCount);
 
+                    whereList["CardPowerProperty"]?["NightPower"] =
+                        getCardNightDayPowerList(
+                            targetList:
+                                searchConditionList.IsUsingList_NightPower,
+                            targetNightDayPowerList:
+                                searchConditionList.NumberOf_NightPower);
+
+                    whereList["CardPowerProperty"]?["DayPower"] =
+                        getCardNightDayPowerList(
+                            targetList:
+                                searchConditionList.IsUsingList_DayPower,
+                            targetNightDayPowerList:
+                                searchConditionList.NumberOf_DayPower);
+
                     whereList["CardInformation"]?["Rarity"] =
                         getCardHistoryList(
                             targetMapList:
@@ -466,6 +503,24 @@ class CustomSearchDelegate extends SearchDelegate {
             targetCardHistoryList.add(convertKeyFunction(key));
           } else {
             targetCardHistoryList.add(key);
+          }
+        }
+      });
+    }
+    return targetCardHistoryList;
+  }
+
+  List<String> getCardNightDayPowerList(
+      {List<bool>? targetList, List<double>? targetNightDayPowerList}) {
+    //targetMapListのTrueになっているKeyを取得する
+    //取得したKeyのListを返す
+    List<String> targetCardHistoryList = [];
+
+    if (targetList != null) {
+      targetList.forEach((element) {
+        if (element) {
+          if (targetNightDayPowerList != null) {
+            targetCardHistoryList.add(targetNightDayPowerList[0].toString());
           }
         }
       });

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/ViewModel/cardSearchFormState.dart';
-import 'package:myapp/ViewModel/deckDetailState.dart';
+import 'package:zutomayoddeck/ViewModel/cardSearchFormState.dart';
+import 'package:zutomayoddeck/ViewModel/deckDetailState.dart';
 import '../View/cardSearchFormWidget.dart';
 import '../ViewModel/deckListState.dart';
 

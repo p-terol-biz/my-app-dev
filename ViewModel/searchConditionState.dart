@@ -53,6 +53,94 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
     searchConditionList.IsUsingList_Rarity["N"] = false;
   }
 
+  void toggleIconButton(String key) {
+    setState(() {
+      searchConditionList.IsUsingList_CardAttribute[key] =
+          !searchConditionList.IsUsingList_CardAttribute[key]!;
+    });
+  }
+
+  Container CheckIconButtonContainer(
+      String titleName, Map<String, bool> targetList) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey,
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titleName,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.0,
+            ),
+          ),
+          SizedBox(height: 8.0),
+          Container(
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: targetList.keys.map((key) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: <Widget>[
+                        // Checkbox(
+                        //   value: targetList[key],
+                        //   onChanged: (value) {
+                        //     setState(() {
+                        //       targetList[key] = value!;
+                        //     });
+                        //   },
+                        // ),
+                        Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                toggleIconButton(key);
+                              },
+                              child: searchConditionList
+                                      .IsUsingList_CardAttribute[key]!
+                                  ? Image.asset(
+                                      'assets/images/cardAttribute_' +
+                                          key +
+                                          '.png',
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/cardAttribute_' +
+                                          key +
+                                          '_grayout.png',
+                                      fit: BoxFit.contain,
+                                      // color: Colors.grey, // グレースケールにする色
+                                      // colorBlendMode: BlendMode.saturation,
+                                    ),
+                            ),
+                            width: 50.0,
+                            height: 50.0,
+                          ),
+                        ),
+                        Text(key)
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Container CheckBoxContainer(String titleName, Map<String, bool> targetList) {
     return Container(
       padding: EdgeInsets.all(16.0),
@@ -255,7 +343,7 @@ class _SearchConditionWidgetState extends State<SearchConditionWidget> {
     return Container(
       child: Column(
         children: <Widget>[
-          CheckBoxContainer(
+          CheckIconButtonContainer(
               'Card Attrubute', searchConditionList.IsUsingList_CardAttribute),
           CheckBoxContainer(
               'Card Type', searchConditionList.IsUsingList_CardType),

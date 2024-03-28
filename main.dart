@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:myapp/env/env.dart';
-import 'package:myapp/screen/top.dart';
+import 'package:zutomayoddeck/env/env.dart';
+import 'package:zutomayoddeck/screen/top.dart';
 // import 'package:http/http.dart' as http;
 // import 'dart:convert';
 import 'package:firebase_storage/firebase_storage.dart';

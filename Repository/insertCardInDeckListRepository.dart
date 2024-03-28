@@ -1,4 +1,4 @@
-import 'package:myapp/Interface/sharedPreferences.dart';
+import 'package:zutomayoddeck/Interface/sharedPreferences.dart';
 import 'dart:async';
 
 class InsertCardInDeckListRepository {

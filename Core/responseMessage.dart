@@ -1,4 +1,4 @@
-import 'package:myapp/Constant/constant.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
 
 class ResultProperty {
   String Status;

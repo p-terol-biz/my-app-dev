@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/screen/deck/deckModelsObject.dart';
+import 'package:zutomayoddeck/screen/deck/deckModelsObject.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';

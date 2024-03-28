@@ -1,9 +1,9 @@
-import 'package:myapp/Constant/constant.dart';
-import 'package:myapp/Core/responseMessage.dart';
-import 'package:myapp/Repository/GetCardInDeckListRepository.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
+import 'package:zutomayoddeck/Core/responseMessage.dart';
+import 'package:zutomayoddeck/Repository/GetCardInDeckListRepository.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:myapp/Repository/InsertCardInDeckListRepository.dart';
+import 'package:zutomayoddeck/Repository/InsertCardInDeckListRepository.dart';
 import '../Repository/deleteCardInDeckListRepository.dart';
 
 class CardInDeckObject {

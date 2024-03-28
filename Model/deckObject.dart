@@ -1,9 +1,11 @@
-import 'package:myapp/Constant/constant.dart';
-import 'package:myapp/Core/responseMessage.dart';
-import 'package:myapp/Repository/GetDeckListRepository.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
+import 'package:zutomayoddeck/Core/responseMessage.dart';
+import 'package:zutomayoddeck/Repository/GetDeckListRepository.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:myapp/Repository/InsertDeckListRepository.dart';
+import 'package:zutomayoddeck/Repository/InsertDeckListRepository.dart';
+
+import '../Repository/deleteDeckListRepository.dart';
 
 class DeckObject {
   List<DeckProperty> deckList;
@@ -70,6 +72,42 @@ class DeckObject {
     String deckListString = jsonEncode(jsonDeckList);
     //DBに保存
     try {
+      InsertDeckListRepository insertDeckListRepository =
+          InsertDeckListRepository();
+      await insertDeckListRepository.insertDeckList(deckListString);
+      resultProperty.Status = ResultPropertyConstants.StatusSuccess;
+    } catch (e) {
+      resultProperty.Status = ResultPropertyConstants.StatusError;
+      resultProperty.Meesage = e.toString();
+    }
+
+    return resultProperty;
+  }
+
+  Future<ResultProperty> deleteDeckList(String deckId) async {
+    resultProperty = ResultProperty();
+    deckList = await getDeckList();
+
+    List<DeckProperty> _deckList = [];
+    deckList.forEach((element) {
+      if (element.deckId != deckId) {
+        _deckList.add(DeckProperty(
+            deckId: element.deckId,
+            title: element.title,
+            deckTopImageURL: element.deckTopImageURL,
+            numberOfCards: element.numberOfCards));
+      }
+    });
+
+    List<Map<String, dynamic>> jsonDeckList =
+        _deckList.map((deck) => deck.toJson()).toList();
+    String deckListString = jsonEncode(jsonDeckList);
+    //DBに保存
+    try {
+      DeleteDeckListRepository deleteDeckListRepository =
+          DeleteDeckListRepository();
+      await deleteDeckListRepository.deleteDeckList();
+
       InsertDeckListRepository insertDeckListRepository =
           InsertDeckListRepository();
       await insertDeckListRepository.insertDeckList(deckListString);

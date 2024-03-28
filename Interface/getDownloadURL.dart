@@ -1,5 +1,5 @@
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:myapp/Constant/constant.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
 
 class GetURL {
   Future<String> getDownloadURL(String path) async {

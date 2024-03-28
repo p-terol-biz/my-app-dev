@@ -1,5 +1,5 @@
 import 'dart:html';
-import 'package:myapp/Constant/constant.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
 
 class IdRepository {
   final Storage _localStorage = window.localStorage;

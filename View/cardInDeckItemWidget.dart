@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/Model/cardInDeckObject.dart';
+import 'package:zutomayoddeck/Model/cardInDeckObject.dart';
 
 Widget CardInDeckItem(BuildContext context, CardInDeckProperty model,
     Function removeCardInDeckList) {

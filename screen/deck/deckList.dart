@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
-import 'package:myapp/Constant/constant.dart';
-import 'package:myapp/Model/deckObject.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
+import 'package:zutomayoddeck/Model/deckObject.dart';
 import 'dart:async';
 
 // class DeckProperty {

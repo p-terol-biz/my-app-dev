@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/Model/deckObject.dart';
-import 'package:myapp/View/cardItemWidget.dart';
-import 'package:myapp/View/cardInDeckItemWidget.dart';
-import 'package:myapp/Model/cardInDeckObject.dart';
-import 'package:myapp/Model/cardObject.dart';
-import 'package:myapp/Component/dialogComponent.dart';
-import 'package:myapp/Router/router.dart';
+import 'package:zutomayoddeck/Model/deckObject.dart';
+import 'package:zutomayoddeck/View/cardItemWidget.dart';
+import 'package:zutomayoddeck/View/cardInDeckItemWidget.dart';
+import 'package:zutomayoddeck/Model/cardInDeckObject.dart';
+import 'package:zutomayoddeck/Model/cardObject.dart';
+import 'package:zutomayoddeck/Component/dialogComponent.dart';
+import 'package:zutomayoddeck/Router/router.dart';
+import 'package:zutomayoddeck/ViewModel/deckListState.dart';
 
 import 'dart:async';
 import 'package:uuid/uuid.dart';
@@ -64,6 +65,10 @@ class _DeckDetailState extends State<DeckDetail>
   List<String> notAllowedInDeckList = [];
   Widget? searchResultsWidget = null;
   var cardInDeckIdURI = "";
+  Map<String, bool> cardItemLoadingBoolList = {};
+  bool IsActiveScreenLoading = false;
+  Map<String, Image> cardItemImageList = {};
+  int imageMaxLoadingCount = 10;
 
   void setNotAllowedInDeckList(
       List<CardInDeckProperty> cardInDeckList, String id) {
@@ -107,33 +112,87 @@ class _DeckDetailState extends State<DeckDetail>
       cardInDeckList.addAll(allCardInDeckList
           .where((element) => element.cardInDeckId == deckId)
           .toList());
-      cardInDeckList.forEach((element) {
+      for (var element in cardInDeckList) {
         setNotAllowedInDeckList(cardInDeckList, element.cardId);
-      });
+      }
     }
-    setState(() {});
   }
 
   Future<void> setCardList() async {
     CardObject cardObject = CardObject();
     cardList = await cardObject.getCardList(cardIdList);
-    setState(() {});
+    cardItemLoadingBoolList = Map.fromIterable(
+        List.generate(cardList.length, (index) => index.toString()),
+        key: (key) => cardList[key].id,
+        value: (value) => false);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    setCardInDeckList();
-    setCardList();
+  Future<void> setCardAndCardInDeckList() async {
+    await setCardInDeckList();
+    await setCardList();
+    await setCardItemImageList();
+
     if (mode == DeckType.CreateDeck) {
       cardInDeckIdURI = Uuid().v4().toString();
     } else if (mode == DeckType.EditDeck) {
       cardInDeckIdURI = deckId;
     }
+
+    if (cardList.length == cardItemImageList.length) {
+      IsActiveScreenLoading = false;
+    }
+    setState(() {});
+  }
+
+  Future<Image> getCardItemImage(String imageURL) async {
+    final Completer<Image> completer = Completer();
+    final image = Image.network(imageURL);
+
+    image.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener(
+        (ImageInfo info, bool synchronousCall) {
+          completer.complete(image); // Completerに画像を渡す
+        },
+      ),
+    );
+    return completer.future;
+  }
+
+  Future<Map<String, Image>> convertFutureImageMap(
+      Map<String, Future<Image>> futureImageMap) async {
+    Map<String, Image> imageMap = {};
+
+    await Future.forEach(futureImageMap.entries,
+        (MapEntry<String, Future<Image>> entry) async {
+      final String key = entry.key;
+      final Future<Image> futureImage = entry.value;
+      final Image image = await futureImage; // Future<Image>を待機してImageに変換
+
+      imageMap[key] = image; // 新しいMapにImageを追加
+    });
+
+    return imageMap;
+  }
+
+  Future<void> setCardItemImageList() async {
+    Map<String, Future<Image>> _cardItemImageList = {};
+    await Future.forEach(cardList, (element) async {
+      _cardItemImageList[element.id] = getCardItemImage(element.cardImageURL);
+    });
+    cardItemImageList.addAll(await convertFutureImageMap(_cardItemImageList));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    IsActiveScreenLoading = true;
+    setCardAndCardInDeckList();
   }
 
   @override
   Widget build(BuildContext context) {
+    // super.build(context);
+    print("In build ");
     var appBar;
     if (mode == DeckType.CreateDeck) {
       appBar = AppBar(
@@ -194,76 +253,92 @@ class _DeckDetailState extends State<DeckDetail>
         ],
       );
     }
-
-    return Scaffold(
-      appBar: appBar,
-      body: Row(children: <Widget>[
-        Expanded(
-            flex: 6,
-            child: Container(
+    return Stack(children: [
+      Scaffold(
+        appBar: appBar,
+        body: Row(
+          children: <Widget>[
+            Expanded(
+                flex: 6,
                 child: SizedBox(
-              child: ListView.builder(
-                  addAutomaticKeepAlives: true,
-                  padding: EdgeInsets.all(10),
-                  itemCount: cardList.length,
-                  itemBuilder: (c, i) => CardItem(c, cardList[i],
-                      notAllowedInDeckList, cardInDeckIdURI, mode)),
-            ))),
-        Expanded(
-          flex: 4,
-          child: Container(
-            color: Colors.grey,
-            child: DragTarget(builder: (context, accepted, rejected) {
-              return Container(child: SizedBox(child: Builder(
-                builder: (BuildContext context) {
-                  return ListView.builder(
-                      itemCount: cardInDeckList.length,
+                  child: ListView.builder(
                       addAutomaticKeepAlives: true,
-                      itemExtent: 100,
-                      itemBuilder: (c, i) => CardInDeckItem(
-                          c, cardInDeckList[i], removeCardInDeckList));
-                },
-              )));
-            }, onAccept: (CardProperty data) {
-              addCardInDeckList(cardInDeckIdURI, data.id, data.cardImageURL);
-            }),
-          ),
-        )
-      ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // DeckModelsObject deckModelsObject = new DeckModelsObject();
-          // final todo = new UserDeckInformation('deck001', 'cardindeck001',
-          //     'card001', CardModels[0].cardImageURL);
-          // deckModelsObject.insertDatabase(todo);
-          // final allRows = await deckModelsObject.getUserDeckInformation();
+                      padding: EdgeInsets.all(10),
+                      itemCount: cardList.length,
+                      itemBuilder: (c, i) => CardItem(
+                          c,
+                          cardList[i],
+                          notAllowedInDeckList,
+                          cardInDeckIdURI,
+                          mode,
+                          cardItemImageList[cardList[i].id])),
+                )),
+            Expanded(
+              flex: 4,
+              child: Container(
+                color: Colors.grey,
+                child: DragTarget(builder: (context, accepted, rejected) {
+                  return SizedBox(child: Builder(
+                    builder: (BuildContext context) {
+                      return ListView.builder(
+                          itemCount: cardInDeckList.length,
+                          addAutomaticKeepAlives: true,
+                          itemExtent: 100,
+                          itemBuilder: (c, i) => CardInDeckItem(
+                              c, cardInDeckList[i], removeCardInDeckList));
+                    },
+                  ));
+                }, onAccept: (CardProperty data) {
+                  addCardInDeckList(
+                      cardInDeckIdURI, data.id, data.cardImageURL);
+                }),
+              ),
+            )
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            // DeckModelsObject deckModelsObject = new DeckModelsObject();
+            // final todo = new UserDeckInformation('deck001', 'cardindeck001',
+            //     'card001', CardModels[0].cardImageURL);
+            // deckModelsObject.insertDatabase(todo);
+            // final allRows = await deckModelsObject.getUserDeckInformation();
 
-          //ここで保存名入力ダイアログ
-          String titleName = title;
-          print("titleName : " + titleName);
-          final result =
-              await DialogUtils.DeckSaveShowDialog(context, titleName);
-          if (result == null) {
-          } else {
-            titleName = result;
-            DeckObject deckObject = DeckObject();
-            deckObject.insertOrUpdateDeckList(
-                cardInDeckIdURI, titleName, "", 0);
-            CardInDeckObject cardInDeckObject = CardInDeckObject();
-            await cardInDeckObject.deleteCardInDeckList(cardInDeckIdURI);
-            await cardInDeckObject.insertOrUpdateCardInDeckList(
-                cardInDeckIdURI, cardInDeckList);
-            setState(() {
-              updateScreen();
-            });
-            DeckListViewRouter deckListViewRouter = DeckListViewRouter();
-            deckListViewRouter.push(context);
-          }
-        },
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.save), //Image.asset(saveIconURL),
+            //ここで保存名入力ダイアログ
+            String titleName = title;
+            print("titleName : " + titleName);
+            final result =
+                await DialogUtils.DeckSaveShowDialog(context, titleName);
+            if (result == null) {
+            } else {
+              titleName = result;
+              DeckObject deckObject = DeckObject();
+              deckObject.insertOrUpdateDeckList(
+                  cardInDeckIdURI, titleName, "", 0);
+              CardInDeckObject cardInDeckObject = CardInDeckObject();
+              await cardInDeckObject.deleteCardInDeckList(cardInDeckIdURI);
+              await cardInDeckObject.insertOrUpdateCardInDeckList(
+                  cardInDeckIdURI, cardInDeckList);
+              setState(() {
+                updateScreen();
+              });
+              DeckListViewRouter deckListViewRouter = DeckListViewRouter();
+              deckListViewRouter.push(context);
+            }
+          },
+          backgroundColor: Colors.black,
+          child: const Icon(Icons.save), //Image.asset(saveIconURL),
+        ),
       ),
-    );
+      IsActiveScreenLoading
+          ? Container(
+              color: Colors.purple, // 背景色を紫色に設定
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Container()
+    ]);
   }
 
   @override

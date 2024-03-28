@@ -1,6 +1,6 @@
-import 'package:myapp/Constant/constant.dart';
-import 'package:myapp/Core/responseMessage.dart';
-import 'package:myapp/Repository/GetCardItemRepository.dart';
+import 'package:zutomayoddeck/Constant/constant.dart';
+import 'package:zutomayoddeck/Core/responseMessage.dart';
+import 'package:zutomayoddeck/Repository/GetCardItemRepository.dart';
 import 'dart:async';
 
 import '../Core/commonConverter.dart';
